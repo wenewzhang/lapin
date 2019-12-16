@@ -5,7 +5,7 @@ use lapin::{
 use log::info;
 
 fn main() {
-    std::env::set_var("RUST_LOG", "trace");
+    std::env::set_var("RUST_LOG", "info");
 
     env_logger::init();
 
@@ -21,8 +21,8 @@ fn main() {
     //send channel
     let channel_a = conn.create_channel().wait().expect("create_channel");
     //receive channel
-    let channel_b = conn.create_channel().wait().expect("create_channel");
-    info!("[{}] state: {:?}", line!(), conn.status().state());
+    // let channel_b = conn.create_channel().wait().expect("create_channel");
+    // info!("[{}] state: {:?}", line!(), conn.status().state());
 
     //create the hello queue
     let queue = channel_a
@@ -42,39 +42,39 @@ fn main() {
         .expect("confirm_select");
     info!("[{}] state: {:?}", line!(), conn.status().state());
 
-    let queue = channel_b
-        .queue_declare(
-            "hello",
-            QueueDeclareOptions::default(),
-            FieldTable::default(),
-        )
-        .wait()
-        .expect("queue_declare");
-    info!("[{}] state: {:?}", line!(), conn.status().state());
-
-    let chan = channel_b.clone();
-    info!("will consume");
-    channel_b
-        .basic_consume(
-            &queue,
-            "my_consumer",
-            BasicConsumeOptions::default(),
-            FieldTable::default(),
-        )
-        .wait()
-        .expect("basic_consume")
-        .set_delegate(Box::new(move |delivery: DeliveryResult| {
-            info!("received message: {:?}", delivery);
-            if let Ok(Some(delivery)) = delivery {
-                chan.basic_ack(delivery.delivery_tag, BasicAckOptions::default())
-                    .wait()
-                    .expect("basic_ack");
-            }
-        }));
-    info!("[{}] state: {:?}", line!(), conn.status().state());
+    // let queue = channel_b
+    //     .queue_declare(
+    //         "hello",
+    //         QueueDeclareOptions::default(),
+    //         FieldTable::default(),
+    //     )
+    //     .wait()
+    //     .expect("queue_declare");
+    // info!("[{}] state: {:?}", line!(), conn.status().state());
+    //
+    // let chan = channel_b.clone();
+    // info!("will consume");
+    // channel_b
+    //     .basic_consume(
+    //         &queue,
+    //         "my_consumer",
+    //         BasicConsumeOptions::default(),
+    //         FieldTable::default(),
+    //     )
+    //     .wait()
+    //     .expect("basic_consume")
+    //     .set_delegate(Box::new(move |delivery: DeliveryResult| {
+    //         info!("received message: {:?}", delivery);
+    //         if let Ok(Some(delivery)) = delivery {
+    //             chan.basic_ack(delivery.delivery_tag, BasicAckOptions::default())
+    //                 .wait()
+    //                 .expect("basic_ack");
+    //         }
+    //     }));
+    // info!("[{}] state: {:?}", line!(), conn.status().state());
 
     info!("will publish");
-    let payload = b"Hello world!";
+    let payload = b"Hello world!!";
     channel_a
         .basic_publish(
             "",
@@ -89,4 +89,5 @@ fn main() {
 
     std::thread::sleep(std::time::Duration::from_millis(2000));
     conn.close(200, "OK").wait().expect("connection close");
+    info!("[{}] declared queue: {:?}", line!(), queue);
 }

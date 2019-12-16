@@ -100,3 +100,9 @@ async fn main() -> Result<()> {
     }
 }
 ```
+Connect & cosumer run
+
+```bash
+cargo run --example consumer
+cargo run --example connection
+```
